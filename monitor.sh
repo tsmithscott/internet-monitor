@@ -7,8 +7,8 @@ if [ -z "$CONTAINERS" ]; then
   exit 1
 fi
 
-# Use INTERVAL variable if set, otherwise default to 10 seconds
-INTERVAL="${INTERVAL:-10}"
+# Use INTERVAL variable if set, otherwise default to 30 seconds
+INTERVAL="${INTERVAL:-30}"
 
 echo "Monitoring internet connection every $INTERVAL seconds. Will restart: $CONTAINERS"
 
