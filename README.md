@@ -1,6 +1,6 @@
 # Internet Monitor
 
-Simple shell script to automate restart of docker containers after an internet outage
+Shell script to automate restart of docker containers after an internet outage
 
 ## Docker run command
 
