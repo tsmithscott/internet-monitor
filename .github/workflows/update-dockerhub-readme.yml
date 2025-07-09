@@ -1,51 +1,24 @@
-name: Sync README to Docker Hub
+name: 🏷️ Sync README to Docker Hub
 
 on:
   push:
     branches: [ "main" ]
-    paths: [ "README.md" ]
+    paths:
+      - "README.md"
+      - ".github/workflows/update-dockerhub.yml"
 
 jobs:
-  update-dockerhub-readme:
-    name: Update Docker Hub Overview
+  update-description:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install jq
-      run: sudo apt-get install jq
-
-    - name: Upload README to Docker Hub
-      env:
-        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
-        REPO: internet-monitor
-      run: |
-        echo "Reading README.md..."
-        ESCAPED_CONTENT=$(jq -Rs . < README.md)
-
-        echo "Authenticating with Docker Hub..."
-        TOKEN=$(curl -s -H "Content-Type: application/json" \
-          -X POST \
-          -d "{\"username\": \"${DOCKER_USERNAME}\", \"password\": \"${DOCKER_PASSWORD}\"}" \
-          https://hub.docker.com/v2/users/login/ | jq -r .token)
-
-        echo "Preparing payload..."
-        echo "{\"full_description\": ${ESCAPED_CONTENT}}" > payload.json
-        cat payload.json
-
-        echo "Sending PATCH request to Docker Hub..."
-        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH \
-          -H "Content-Type: application/json" \
-          -H "Authorization: JWT ${TOKEN}" \
-          --data @payload.json \
-          https://hub.docker.com/v2/repositories/${DOCKER_USERNAME}/${REPO}/)
-
-        if [ "$RESPONSE" = "200" ]; then
-          echo "✅ Docker Hub overview updated successfully."
-        else
-          echo "❌ Failed to update overview. HTTP status: $RESPONSE"
-          exit 1
-        fi
+      - name: Update Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+          repository: ${{ secrets.DOCKER_USERNAME }}/internet-monitor
+          readme-filepath: ./README.md
