@@ -14,23 +14,38 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install jq
+      run: sudo apt-get install jq
+
     - name: Upload README to Docker Hub
       env:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_TOKEN }}
         REPO: internet-monitor
       run: |
-        README_CONTENT=$(cat README.md)
+        echo "Reading README.md..."
+        ESCAPED_CONTENT=$(jq -Rs . < README.md)
 
-        # Get JWT token
+        echo "Authenticating with Docker Hub..."
         TOKEN=$(curl -s -H "Content-Type: application/json" \
           -X POST \
-          -d '{"username": "'"$DOCKER_USERNAME"'", "password": "'"$DOCKER_PASSWORD"'"}' \
+          -d "{\"username\": \"${DOCKER_USERNAME}\", \"password\": \"${DOCKER_PASSWORD}\"}" \
           https://hub.docker.com/v2/users/login/ | jq -r .token)
 
-        # Update Docker Hub repo description
-        curl -s -X PATCH \
+        echo "Preparing payload..."
+        echo "{\"full_description\": ${ESCAPED_CONTENT}}" > payload.json
+        cat payload.json
+
+        echo "Sending PATCH request to Docker Hub..."
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH \
           -H "Content-Type: application/json" \
-          -H "Authorization: JWT $TOKEN" \
-          -d '{"full_description": "'"$(jq -Rs . <<< "$README_CONTENT")"'"}' \
-          https://hub.docker.com/v2/repositories/$DOCKER_USERNAME/$REPO/
+          -H "Authorization: JWT ${TOKEN}" \
+          --data @payload.json \
+          https://hub.docker.com/v2/repositories/${DOCKER_USERNAME}/${REPO}/)
+
+        if [ "$RESPONSE" = "200" ]; then
+          echo "✅ Docker Hub overview updated successfully."
+        else
+          echo "❌ Failed to update overview. HTTP status: $RESPONSE"
+          exit 1
+        fi
