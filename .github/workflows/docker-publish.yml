@@ -47,9 +47,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-            type=sha
+          tags: type=raw,value=latest
 
       # ➕ New step to get timestamp
       - name: Set current timestamp
