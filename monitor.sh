@@ -7,7 +7,10 @@ if [ -z "$CONTAINERS" ]; then
   exit 1
 fi
 
-echo "Monitoring internet connection. Will restart: $CONTAINERS"
+# Use INTERVAL variable if set, otherwise default to 10 seconds
+INTERVAL="${INTERVAL:-10}"
+
+echo "Monitoring internet connection every $INTERVAL seconds. Will restart: $CONTAINERS"
 
 while true; do
   if curl -s https://www.google.com --max-time 5 > /dev/null; then
@@ -23,5 +26,5 @@ while true; do
     echo 'Internet offline'
     touch /tmp/offline
   fi
-  sleep 10
+  sleep "$INTERVAL"
 done
