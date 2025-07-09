@@ -29,6 +29,12 @@ services:
     restart: unless-stopped
 ```
 
-### Docker Hub Page
+### Links
 
-https://hub.docker.com/repository/docker/tsmithscott/internet-monitor
+#### GitHub
+
+> https://github.com/tsmithscott/internet-monitor
+
+#### Docker Hub
+
+> https://hub.docker.com/repository/docker/tsmithscott/internet-monitor
