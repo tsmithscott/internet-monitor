@@ -1,4 +1,4 @@
-name: Push Docker Image
+name: push-docker-image
 
 on:
   push:
@@ -6,9 +6,10 @@ on:
 
 env:
   IMAGE_NAME: tsmithscott/internet-monitor
+  REGISTRY: docker.io
 
 jobs:
-  push-latest:
+  push:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,18 +25,20 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and push amd64 image
-        uses: docker/build-push-action@v5
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          tags: docker.io/tsmithscott/internet-monitor:latest
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
 
-      - name: Build and push arm64 image
+      - name: Build and push multi-arch image
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: docker.io/tsmithscott/internet-monitor:arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
