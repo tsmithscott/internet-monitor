@@ -7,7 +7,7 @@ Shell script to automate restart of docker containers after an internet outage
 ```bash
 docker run -d \
   --name internet-monitor \
-  -e CONTAINERS="tsdproxy another-container" \
+  -e CONTAINERS="container another-container" \
   -e INTERVAL="30" \
   -v /var/run/docker.sock:/var/run/docker.sock \
   --restart unless-stopped \
