@@ -1,8 +1,8 @@
-# Base image
-FROM alpine:latest
+# Base image (pinned so Dependabot can track and bump it)
+FROM alpine:3.24
 
-# Install required packages
-RUN apk add --no-cache curl ca-certificates docker-cli
+# Install required packages and pull in any security fixes for the base image
+RUN apk upgrade --no-cache && apk add --no-cache curl ca-certificates docker-cli
 
 # Copy monitor script
 COPY monitor.sh /usr/local/bin/monitor.sh
